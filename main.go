@@ -18,7 +18,7 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	module := requestParts[0]
 	versionAndFile := strings.Split(requestParts[1], "/")
 	version := versionAndFile[0]
-	file := versionAndFile[1]
+	// file := versionAndFile[1]
 
 	// ENS stuff
 	client, _ := ethclient.Dial(rpcUrl)
