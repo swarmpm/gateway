@@ -21,18 +21,34 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// file := versionAndFile[1]
 
 	// ENS stuff
-	client, _ := ethclient.Dial(rpcUrl)
+	client, err := ethclient.Dial(rpcUrl)
 
-	resolver, _ := ens.NewResolver(client, fmt.Sprintf("%s.swarmpm.eth", module))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err.Error())
+	}
 
-	swarmContentHash, _ := resolver.Text(version)
+	resolver, err := ens.NewResolver(client, fmt.Sprintf("%s.swarmpm.eth", module))
 
-	swarmRef, _ := ens.ContenthashToString([]byte(swarmContentHash))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err.Error())
+	}
 
-	// Swarm Stuff
+	swarmContentHash, err := resolver.Text(version)
 
-	fmt.Fprintln(w, swarmRef)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintln(w, err.Error())
+	}
 
+	contentHash, _ := ens.ContenthashToString([]byte(swarmContentHash))
+
+	fmt.Println("contentHash")
+
+	if contentHash == "" {
+		http.NotFound(w, req)
+	}
 }
 
 func main() {
