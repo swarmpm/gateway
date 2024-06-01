@@ -9,7 +9,7 @@ import (
 	"github.com/wealdtech/go-ens/v3"
 )
 
-const RPC = "https://eth.llamarpc.com"
+const rpcUrl = "https://eth.llamarpc.com"
 
 func handleRequest(w http.ResponseWriter, req *http.Request) {
 	// parse string from request
@@ -17,15 +17,21 @@ func handleRequest(w http.ResponseWriter, req *http.Request) {
 	requestParts := strings.Split(req.RequestURI[1:], "@")
 	module := requestParts[0]
 	versionAndFile := strings.Split(requestParts[1], "/")
+	version := versionAndFile[0]
+	file := versionAndFile[1]
 
-	// no error handling yet
-	client, _ := ethclient.Dial(RPC)
-	address, _ := ens.Resolve(client, module)
+	// ENS stuff
+	client, _ := ethclient.Dial(rpcUrl)
 
-	fmt.Fprintln(w, address)
-	//just printing parased module version and file
-	fmt.Fprintln(w, versionAndFile[0])
-	fmt.Fprintln(w, versionAndFile[1])
+	resolver, _ := ens.NewResolver(client, fmt.Sprintf("%s.swarmpm.eth", module))
+
+	swarmContentHash, _ := resolver.Text(version)
+
+	swarmRef, _ := ens.ContenthashToString([]byte(swarmContentHash))
+
+	// Swarm Stuff
+
+	fmt.Fprintln(w, swarmRef)
 
 }
 
